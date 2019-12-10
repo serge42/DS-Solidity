@@ -3,7 +3,7 @@
     <div>
       <drizzle-contract
         contractName="SimpleStorage"
-        method="storedData"
+        method="get_data"
         label="Value"
       />
       <drizzle-contract-form

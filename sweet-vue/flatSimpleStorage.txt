@@ -1,9 +1,12 @@
+
+// File: contracts/SimpleStorage.sol
+
 pragma solidity >=0.4.21 <0.6.0;
 
 contract SimpleStorage {
     event StorageSet(string _message);
 
-    uint storedData;
+    uint public storedData;
 
     function set(uint x) public {
         storedData = x;
@@ -11,7 +14,7 @@ contract SimpleStorage {
         emit StorageSet("Data stored successfully!");
     }
 
-    function get_data() external view returns (uint) {
-        return storedData;
+    function get_data() external pure returns (uint) {
+        return 11;
     }
 }
