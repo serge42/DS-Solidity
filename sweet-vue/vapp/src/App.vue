@@ -22,10 +22,10 @@
       <SecureTransfer />
     </div>
 
-    <div class="section">
+    <!-- <div class="section">
       <h2>Complex Storage</h2>
       <ComplexStorage />
-    </div>
+    </div> -->
   </div>
 
   <div v-else>Loading...</div>
@@ -34,14 +34,14 @@
 <script>
 import TutorialToken from './TutorialToken'
 import SimpleStorage from './SimpleStorage'
-import ComplexStorage from './ComplexStorage'
+// import ComplexStorage from './ComplexStorage'
 import SecureTransfer from './SecureTransfer'
 import { mapGetters } from 'vuex'
 
 export default {
   name: 'app',
   components: {
-    ComplexStorage,
+    // ComplexStorage,
     TutorialToken,
     SimpleStorage,
     SecureTransfer
