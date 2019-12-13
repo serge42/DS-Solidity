@@ -1399,12 +1399,12 @@
     "5783": {
       "events": {},
       "links": {},
-      "address": "0x59B2f5DA07244c9B334a28E719A215043BC6C6C1",
-      "transactionHash": "0xd317ab20dc167b1efafd09ea6c5e04a8064fb30145aefcd7e809c6451f01654d"
+      "address": "0xD2f1EC53C18a397B34180085FAEA2C019d378ED0",
+      "transactionHash": "0xf4410e2940e9c274d911878638794aa9b70b1413444ae0852e560bc7e7fcd3dd"
     }
   },
   "schemaVersion": "3.0.19",
-  "updatedAt": "2019-12-12T11:49:10.219Z",
+  "updatedAt": "2019-12-13T15:05:43.718Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

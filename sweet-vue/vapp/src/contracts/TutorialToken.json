@@ -1306,12 +1306,12 @@
         }
       },
       "links": {},
-      "address": "0x43AB44d485Bce0a005bcfEcc46Ec6e62e17Dc6D5",
-      "transactionHash": "0x256d425dc12a7b948fb52ce9e55813e30787910145ef8783a8655a851a98ad05"
+      "address": "0x7d366a282d137565B0C87DB00cc7284C1B516997",
+      "transactionHash": "0xe238ebfeb2d3eebe2a89e94f7afffee5d88614d00a19f48f76442cb1ecb09726"
     }
   },
   "schemaVersion": "3.0.19",
-  "updatedAt": "2019-12-10T21:19:27.099Z",
+  "updatedAt": "2019-12-13T15:05:43.477Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {
