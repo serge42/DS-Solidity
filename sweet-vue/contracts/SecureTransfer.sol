@@ -4,7 +4,7 @@ contract SecureTransfer {
 
     uint public price;
     uint public offer;
-    address public seller;
+    address payable public seller;
     address public buyer;
     bool public sellerAccept;
 
@@ -22,12 +22,12 @@ contract SecureTransfer {
         price = _price;
     }
 
-    function makeDeposit(address _buyer) public payable {
-        require(_buyer != address(0), "invalide buyer address");
-        require(price > 0 && msg.value >= price && msg.value > offer, "amount is too small");
+    function makeDeposit(uint amt) public payable {
+        require(msg.sender != address(0), "invalide buyer address");
+        require(price > 0 && amt >= price && amt > offer, "amount is too small");
         require(!sellerAccept, "An offer has already been accepted");
-        buyer = _buyer;
-        offer = msg.value;
+        buyer = msg.sender;
+        offer = amt;
     }
 
     function acceptOffer() public {
