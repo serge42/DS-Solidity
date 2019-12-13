@@ -2,7 +2,7 @@
     <div v-if="isDrizzleInitialized">
         <div>
             <drizzle-contract 
-                contract-name="SecureTransfer"
+                contractName="SecureTransfer"
                 method="price"
                 label="Current price"
             />
@@ -22,5 +22,4 @@ export default {
 </script>
 
 <style>
-
 </style>

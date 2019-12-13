@@ -18,6 +18,11 @@
     </div>
 
     <div class="section">
+      <h2>Secure Transfer</h2>
+      <SecureTransfer />
+    </div>
+
+    <div class="section">
       <h2>Complex Storage</h2>
       <ComplexStorage />
     </div>
@@ -30,6 +35,7 @@
 import TutorialToken from './TutorialToken'
 import SimpleStorage from './SimpleStorage'
 import ComplexStorage from './ComplexStorage'
+import SecureTransfer from './SecureTransfer'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -37,7 +43,8 @@ export default {
   components: {
     ComplexStorage,
     TutorialToken,
-    SimpleStorage
+    SimpleStorage,
+    SecureTransfer
   },
 
   computed: mapGetters('drizzle', ['isDrizzleInitialized'])
