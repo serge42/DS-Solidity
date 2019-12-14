@@ -19,6 +19,7 @@ contract SecureTransfer {
         require(msg.sender == seller, "price can only be set by seller");
         require(_price > 0, "price should be larger than 0");
         require(!sellerAccept, "an offer has already been accepted");
+        require(offer == 0, "price can't be changed when an offer has already been made");
         price = _price;
     }
 
