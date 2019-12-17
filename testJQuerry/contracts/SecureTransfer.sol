@@ -3,52 +3,55 @@ pragma solidity >=0.4.21 <0.6.0;
 contract SecureTransfer {
 
     uint public price;
-    uint public offer;
+    // uint public offer;
     address payable public seller;
-    address public buyer;
-    bool public isActive;
+    address payable public buyer;
+    bool public active;
+    bool public locked;
 
-    constructor() public {
-        price = 0;
-        offer = 0;
-        isActive = true;
+    event Abort();
+    event Accepted();
+    event BuyerEnd();
+    event SellerPaid();
+
+    constructor() public payable {
+        require(msg.value > 0, "price has to be > 0");
+        price = msg.value;
+        // offer = 0;
+        active = true;
+        locked = false;
         seller = msg.sender;
     }
 
-    function setPrice(uint _price) public {
-        require(msg.sender == seller, "price can only be set by seller");
-        require(_price > 0, "price should be larger than 0");
-        require(isActive, "an offer has already been accepted");
-        require(offer == 0, "price can't be changed when an offer has already been made");
-        price = _price;
-    }
-
-    function makeDeposit(uint amt) public payable {
+    function makeDeposit() public payable {
         require(msg.sender != address(0), "invalide buyer address");
-        require(price > 0 && amt >= price && amt > offer, "amount is too small");
-        require(isActive, "An offer has already been accepted");
+        require(active && !locked, "An offer has already been accepted or canceld.");
+        require(msg.value == 2 * price, "buyer should deposit twice the price.");
         buyer = msg.sender;
-        offer = amt;
+        locked = true;
+        emit Accepted();
     }
 
-    function acceptOffer() public {
-        require(msg.sender == seller, "only seller can accept an offer");
-        require(price > 0 && offer >= price, "can't accept offer below initial price");
-        isActive = false;
+    function confirmReceipt() public payable {
+        require(msg.sender == buyer, "can only be called by buyer");
+        require(active && locked, "transaction was canceld");
+        emit BuyerEnd();
+        active = false;
+        buyer.transfer(price);
     }
 
-    function endTransactionBuyer(/* address payable beneficiary */) public {
-        require(msg.sender == buyer, "only buyer can use this");
-        // require(seller == beneficiary, "beneficiary has to be == seller");
-        require(!isActive, "seller has to accept the offer first");
-
-        seller.transfer(offer);
+    function refundSeller() public payable {
+        require(msg.sender == seller, "can only be called by seller");
+        require(!active && locked, "cannot refund a canceld transaction");
+        emit SellerPaid();
+        locked = false;
+        seller.transfer(3 * price);
     }
 
-    function endTransaction(address payable beneficiary) public {
-        require(msg.sender == seller, "only seller can use this");
-        require(!isActive, "seller has to accept the offer first");
-        //require(enough time has passed, "has to wait longer");
-        beneficiary.transfer(offer);
+    function cancelOffer() public payable {
+        require(msg.sender == seller, "only seller can cancel.");
+        require(active && !locked, "offer has been accepted, or is already canceld.");
+        active = false;
+        emit Abort();
     }
 }
