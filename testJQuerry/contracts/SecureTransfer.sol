@@ -9,6 +9,7 @@ contract SecureTransfer {
     bool public active;
     bool public locked;
 
+    event Update();
     event Abort();
     event Accepted();
     event BuyerEnd();
@@ -53,5 +54,15 @@ contract SecureTransfer {
         active = false;
         emit Abort();
         seller.transfer(price);
+    }
+
+    function updatePrice() public payable {
+        require(msg.sender == seller, "only seller can use this function");
+        require(active && !locked, "offer has already been accepted or canceled");
+        emit Update();
+        // Transfer old price back to seller
+        seller.transfer(price);
+        // update price
+        price = msg.value;
     }
 }

@@ -29,8 +29,38 @@ App = {
             // Connect provider to interact with contract
             App.contracts.SecureTransfer.setProvider(App.web3Provider);
 
-            return App.render();
+            return App.initEvents();
         });
+    },
+
+    initEvents: async function() {
+        App.contract = await App.contracts.SecureTransfer.deployed();
+        const acceptedEvt = await App.contract.Accepted();
+        const buyerEndEvt = await App.contract.BuyerEnd();
+        const sellerRefundEvt = await App.contract.SellerRefund();
+        const abortEvt = await App.contract.Abort();
+
+        abortEvt.watch(function(error, result) {
+            if (!error) {
+                App.render();
+            }
+        });
+        acceptedEvt.watch(function(error, result) {
+            if (!error) {
+                App.render();
+            }
+        })
+        buyerEndEvt.watch(function(error, result) {
+            if (!error) {
+                App.render();
+            }
+        })
+        sellerRefundEvt.watch(function(error, result) {
+            if (!error) {
+                App.render();
+            }
+        })
+        return App.render();
     },
 
     makeOffer: async function (form, price) {
@@ -95,6 +125,30 @@ App = {
         App.render();
     },
 
+    updatePrice: async function(form) {
+        const priceInput = form.find('input[name=price]');
+        let price = priceInput.val();
+        const re = /\d+/;
+        if (!re.test(price)) {
+            if (!form.next().is('font')) {
+                form.after('<font color="red">Please input a number</font>');
+            }
+        } else {
+            // offer = parseInt(offer);
+            if (form.next().is('font')) {
+                form.next().remove();
+            }
+            try {
+                let ret = await App.contract.updatePrice({ from: App.account, value: web3.toWei(price, "ether") });
+                console.log(ret);
+            } catch (error) {
+                App.solidityError(error);
+            }
+        }
+        priceInput.val('');
+        return App.render();
+    },
+
     solidityError: function(error) {
         if (error.code == 4001) {
             console.log('user refused transaction');
@@ -104,8 +158,8 @@ App = {
     },
 
     render: async function () {
-
         // Load account data
+        // console.log(web3.eth.accounts);
         web3.eth.getCoinbase(function (err, account) {
             if (err === null) {
                 App.account = account;
@@ -118,7 +172,7 @@ App = {
 
         // Load contract data
         try {
-            App.contract = await App.contracts.SecureTransfer.deployed();
+            // App.contract = await App.contracts.SecureTransfer.deployed();
             const seller = await App.contract.seller();
             const buyer = await App.contract.buyer();
             const price = web3.fromWei(await App.contract.price(), "ether");
@@ -130,7 +184,7 @@ App = {
             let sellerTxt = isSeller ? 'You' : seller.toString();
             let buyerTxt = isBuyer ? 'You' : buyer.toString();
             if (buyer.toString() == 0x0)
-                buyerTxt = 'Not buyed';
+                buyerTxt = 'Not bought';
             let transTemplate = $('div.transaction div');
             transTemplate.find('#seller span').text(sellerTxt);
             transTemplate.find('#buyer span').text(buyerTxt);
@@ -144,12 +198,15 @@ App = {
             confirmDeliveryForm.find('input[name=submit]').unbind().click(e => App.confirmDelivery(isActive));
             const refundSellerForm = transTemplate.find('form[name=refundingSeller]');
             refundSellerForm.find('input[name=submit]').unbind().click(e => App.refundSeller());
+            const updateForm = transTemplate.find('form[name=updatingPrice]');
+            updateForm.find('input[name=submit]').unbind().click(e => App.updatePrice(updateForm));
 
             if (isSeller) {
                 transTemplate.find('form[name=makingOffer]').hide();
             }
             if (!isSeller || !isActive || isLocked) {
                 cancelForm.hide();
+                updateForm.hide();
             }
             if (isLocked || !isActive) {
                 offerForm.hide();
