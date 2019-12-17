@@ -7,10 +7,10 @@
       <drizzle-account units="Ether" :precision="2" />
     </div>
 
-    <div class="section">
+    <!-- <div class="section">
       <h2>Tutorial Token</h2>
       <TutorialToken />
-    </div>
+    </div> -->
 
     <div class="section">
       <h2>Simple Storage</h2>
@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import TutorialToken from './TutorialToken'
+// import TutorialToken from './TutorialToken'
 import SimpleStorage from './SimpleStorage'
 // import ComplexStorage from './ComplexStorage'
 import SecureTransfer from './SecureTransfer'
@@ -42,7 +42,7 @@ export default {
   name: 'app',
   components: {
     // ComplexStorage,
-    TutorialToken,
+    // TutorialToken,
     SimpleStorage,
     SecureTransfer
   },

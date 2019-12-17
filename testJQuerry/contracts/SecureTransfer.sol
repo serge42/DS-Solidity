@@ -4,13 +4,11 @@ contract SecureTransfer {
 
     uint public price;
     uint public offer;
-    uint public bar;
     address payable public seller;
     address public buyer;
     bool public sellerAccept;
 
     constructor() public {
-        bar = 100;
         price = 0;
         offer = 0;
         sellerAccept = false;
@@ -37,13 +35,6 @@ contract SecureTransfer {
         require(msg.sender == seller, "only seller can accept an offer");
         require(price > 0 && offer >= price, "can't accept offer below initial price");
         sellerAccept = true;
-    }
-
-    function foo() public view returns (uint) {
-        // if (sellerAccept) {
-        //     return 10;
-        // }
-        return bar;
     }
 
     function endTransactionBuyer(/* address payable beneficiary */) public {
