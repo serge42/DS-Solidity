@@ -18,20 +18,20 @@
             <h2>Transaction</h2>
             <div>
                 <p id="seller" name="seller"><label>Seller:</label><span></span></p>
-                <p id="price"><label>Starting price:</label><span></span></p>
-                <p id="offer"><label>Current offer:</label><span></span></p>
+                <p id="price"><label>Price:</label><span></span> ETH</p>
                 <p id="buyer"><label>Buyer:</label><span></span></p>
-                <p id="accepted" hidden><label>Offer accepted</label></p>
-                <form name="settingPrice">
-                    <input type="text" name="price" placeholder="Price (Wei)" />
-                    <input type="button" name="submit" value="Submit" />
-                </form>
                 <form name="makingOffer">
-                    <input type="text" name="price" placeholder="Offer (Wei)" />
+                    <input type="text" name="price" placeholder="Offer (ETH)" />
                     <input type="button" name="submit" value="submit" />
                 </form>
-                <form name="acceptingOffer">
-                    <input type="button" name="submit" value="Accept offer" />
+                <form name="cancelingOffer">
+                    <input type="button" name="submit" value="Cancel offer" />
+                </form>
+                <form name="confirmingDelivery">
+                    <input type="button" name="submit" value="Confirm delivery" />
+                </form>
+                <form name="refundingSeller">
+                    <input type="button" name="submit" value="Get refund" />
                 </form>
             </div>
             <!-- <p id="seller"></p>

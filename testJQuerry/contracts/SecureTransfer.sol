@@ -12,12 +12,11 @@ contract SecureTransfer {
     event Abort();
     event Accepted();
     event BuyerEnd();
-    event SellerPaid();
+    event SellerRefund();
 
     constructor() public payable {
         require(msg.value > 0, "price has to be > 0");
         price = msg.value;
-        // offer = 0;
         active = true;
         locked = false;
         seller = msg.sender;
@@ -32,7 +31,7 @@ contract SecureTransfer {
         emit Accepted();
     }
 
-    function confirmReceipt() public payable {
+    function confirmDelivery() public payable {
         require(msg.sender == buyer, "can only be called by buyer");
         require(active && locked, "transaction was canceld");
         emit BuyerEnd();
@@ -43,9 +42,9 @@ contract SecureTransfer {
     function refundSeller() public payable {
         require(msg.sender == seller, "can only be called by seller");
         require(!active && locked, "cannot refund a canceld transaction");
-        emit SellerPaid();
+        emit SellerRefund();
         locked = false;
-        seller.transfer(3 * price);
+        seller.transfer(2 * price);
     }
 
     function cancelOffer() public payable {

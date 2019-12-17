@@ -33,7 +33,7 @@ App = {
         });
     },
 
-    setPrice: async function (form) {
+    /* setPrice: async function (form) {
         const priceInput = form.find('input[name=price]');
         const price = priceInput.val();
         const re = /\d+/;
@@ -49,18 +49,14 @@ App = {
                 let ret = await App.contract.setPrice(price, { from: App.account });
                 console.log(ret);
             } catch (error) {
-                if (error.code == 4001) {
-                    console.log('user refused transaction');
-                } else {
-                    console.log(error);
-                }
+                App.solidityError(error);
             }
         }
         priceInput.val('');
         return App.render();
-    },
+    }, */
 
-    makeOffer: async function(form, price) {
+    makeOffer: async function (form, price) {
         if (price == 0)
             return;
         const offerInput = form.find('input[name=price]');
@@ -71,27 +67,63 @@ App = {
                 form.after('<font color="red">Please input a number</font>');
             }
         } else {
-            offer = parseInt(offer);
+            // offer = parseInt(offer);
             if (form.next().is('font')) {
                 form.next().remove();
             }
-            if (offer < price) {
-                form.after('<font color="red">Your offer should be equal to or larger than starting price.</font>');
+            if (offer < 2 * price) {
+                form.after('<font color="red">Your offer should be at least twice the price.</font>');
             } else {
                 try {
-                    let ret = await App.contract.makeDeposit(offer, { from: App.account });
+                    let ret = await App.contract.makeDeposit({ from: App.account, value: web3.toWei(offer, "ether") });
                     console.log(ret);
                 } catch (error) {
-                    if (error.code == 4001) {
-                        console.log('user refused transaction');
-                    } else {
-                        console.log(error);
-                    }
+                    App.solidityError(error);
                 }
             }
         }
         offerInput.val('');
         return App.render();
+    },
+
+    cancelOffer: async function () {
+        try {
+            let ret = await App.contract.cancelOffer({ from: App.account });
+            console.log(ret);
+        } catch (error) {
+            App.solidityError(error);
+        }
+        return App.render();
+    },
+
+    confirmDelivery: async function (isActive) {
+        if (!isActive)
+            return
+        try {
+            let ret = await App.contract.confirmDelivery({ from: App.account });
+            console.log(ret);
+        } catch (error) {
+            App.solidityError(error);
+        }
+        return App.render();
+    },
+
+    refundSeller: async function() {
+        try {
+            let ret = await App.contract.refundSeller({ from: App.account });
+            console.log(ret);
+        } catch (error) {
+            App.solidityError(error);
+        }
+        App.render();
+    },
+
+    solidityError: function(error) {
+        if (error.code == 4001) {
+            console.log('user refused transaction');
+        } else {
+            console.log(error);
+        }
     },
 
     render: async function () {
@@ -117,57 +149,47 @@ App = {
             App.contract = await App.contracts.SecureTransfer.deployed();
             const seller = await App.contract.seller();
             const buyer = await App.contract.buyer();
-            const price = await App.contract.price();
-            const offer = await App.contract.offer();
-            const isActive = await App.contract.isActive();
+            const price = web3.fromWei(await App.contract.price(), "ether");
+            const isActive = await App.contract.active();
+            const isLocked = await App.contract.locked();
             const isSeller = seller === App.account;
             const isBuyer = buyer === App.account;
-            const hasOffer = offer > 0;
-            const hasPrice = price > 0;
 
             let sellerTxt = isSeller ? 'You' : seller.toString();
             let buyerTxt = isBuyer ? 'You' : buyer.toString();
-            let offerTxt = offer.toNumber();
-            if (!hasOffer) {
-                offerTxt = 'No offer';
-                buyerTxt = 'No offer';
-            }
-
+            if (buyer.toString() == 0x0)
+                buyerTxt = 'Not buyed';
             let transTemplate = $('div.transaction div');
             transTemplate.find('#seller span').text(sellerTxt);
             transTemplate.find('#buyer span').text(buyerTxt);
             transTemplate.find('#price span').text(price.toNumber());
-            transTemplate.find('#offer span').text(offerTxt);
 
-            const priceForm = transTemplate.find('form[name=settingPrice]');
-            priceForm.find('input[name=submit]').unbind().click(e => App.setPrice(priceForm));
             const offerForm = transTemplate.find('form[name=makingOffer]');
             offerForm.find('input[name=submit]').unbind().click(e => App.makeOffer(offerForm, price.toNumber()));
-            const acceptForm = transTemplate.find('form[name=acceptingOffer]');
+            const cancelForm = transTemplate.find('form[name=cancelingOffer]');
+            cancelForm.find('input[name=submit]').unbind().click(e => App.cancelOffer());
+            const confirmDeliveryForm = transTemplate.find('form[name=confirmingDelivery]');
+            confirmDeliveryForm.find('input[name=submit]').unbind().click(e => App.confirmDelivery(isActive));
+            const refundSellerForm = transTemplate.find('form[name=refundingSeller]');
+            refundSellerForm.find('input[name=submit]').unbind().click(e => App.refundSeller());
 
-            if (!isSeller) {
-                priceForm.hide();
-            }
-            if (hasOffer) {
-                priceForm.hide();
-            }
-            if (!hasOffer) {
-                transTemplate.find('#buyer').hide();
-            }
-            if (isSeller || !hasPrice) {
+            if (isSeller) {
                 transTemplate.find('form[name=makingOffer]').hide();
             }
-            if (!isSeller || !hasOffer) {
-                acceptForm.hide();
+            if (!isSeller || !isActive || isLocked) {
+                cancelForm.hide();
             }
-            if (!isActive) {
-                transTemplate.find('#accepted label').show();
+            if (isLocked || !isActive) {
+                offerForm.hide();
             }
-            // $('#price').text('Starting price: ' + price.toNumber());
-            // $('#offer').text('Current offer: ' + offer.toString());
-            // $('#accepted').text('Accepted: ' + isActive.toString());
+            if (isSeller || !isLocked || !isActive) {
+                confirmDeliveryForm.hide();
+            } 
+            if (!isSeller || isActive || !isLocked) {
+                refundSellerForm.hide();
 
-
+            }
+            console.log(isActive + ' ' + isLocked);
             // $('div.transaction').children().last().after(template.html());
             //   const goal = web3.fromWei((await App.contract.getGoal()).toNumber() || 0, "ether");
             //   const sum = web3.fromWei((await App.contract.getSum()).toNumber() || 0, "ether");
