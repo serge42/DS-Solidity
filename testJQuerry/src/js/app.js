@@ -33,29 +33,6 @@ App = {
         });
     },
 
-    /* setPrice: async function (form) {
-        const priceInput = form.find('input[name=price]');
-        const price = priceInput.val();
-        const re = /\d+/;
-        if (!re.test(price)) {
-            if (!form.next().is('font')) {
-                form.after('<font color="red">Please input a number</font>');
-            }
-        } else {
-            if (form.next().is('font')) {
-                form.next().remove();
-            }
-            try {
-                let ret = await App.contract.setPrice(price, { from: App.account });
-                console.log(ret);
-            } catch (error) {
-                App.solidityError(error);
-            }
-        }
-        priceInput.val('');
-        return App.render();
-    }, */
-
     makeOffer: async function (form, price) {
         if (price == 0)
             return;
@@ -127,11 +104,6 @@ App = {
     },
 
     render: async function () {
-        var loader = $('#loader');
-        var content = $('#content');
-
-        loader.show();
-        content.hide();
 
         // Load account data
         web3.eth.getCoinbase(function (err, account) {
@@ -187,15 +159,14 @@ App = {
             } 
             if (!isSeller || isActive || !isLocked) {
                 refundSellerForm.hide();
-
             }
-            console.log(isActive + ' ' + isLocked);
-            // $('div.transaction').children().last().after(template.html());
-            //   const goal = web3.fromWei((await App.contract.getGoal()).toNumber() || 0, "ether");
-            //   const sum = web3.fromWei((await App.contract.getSum()).toNumber() || 0, "ether");
-            //   $('#goal').text(goal + ' ETH');
-            //   $('#sum').text(sum + ' ETH');
-            //   $('#percent').attr('data-percent', Math.round(sum/goal * 100))
+            if (!isActive && !isLocked) {
+                // transaction terminated (completed or canceled)
+                $('div.transaction h2').text('Transaction (terminated)');
+            } else {
+                $('div.transaction h2').text('Transaction');
+            }
+
         } catch (e) {
             console.log(e);
         }

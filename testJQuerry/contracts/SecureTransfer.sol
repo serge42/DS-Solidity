@@ -24,8 +24,8 @@ contract SecureTransfer {
 
     function makeDeposit() public payable {
         require(msg.sender != address(0), "invalide buyer address");
-        require(active && !locked, "An offer has already been accepted or canceld.");
-        require(msg.value == 2 * price, "buyer should deposit twice the price.");
+        require(active && !locked, "The transaction has already been accepted or canceld.");
+        require(msg.value >= 2 * price, "buyer should deposit twice the price.");
         buyer = msg.sender;
         locked = true;
         emit Accepted();
@@ -49,8 +49,9 @@ contract SecureTransfer {
 
     function cancelOffer() public payable {
         require(msg.sender == seller, "only seller can cancel.");
-        require(active && !locked, "offer has been accepted, or is already canceld.");
+        require(active && !locked, "offer has already been accepted, or canceld.");
         active = false;
         emit Abort();
+        seller.transfer(price);
     }
 }
