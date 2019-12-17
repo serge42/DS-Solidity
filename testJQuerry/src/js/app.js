@@ -34,7 +34,8 @@ App = {
     },
 
     setPrice: async function (form) {
-        const price = form.find('input[name=price]').val();
+        const priceInput = form.find('input[name=price]');
+        const price = priceInput.val();
         const re = /\d+/;
         if (!re.test(price)) {
             if (!form.next().is('font')) {
@@ -44,9 +45,52 @@ App = {
             if (form.next().is('font')) {
                 form.next().remove();
             }
-            let ret = await App.contract.setPrice(price, { from: App.account });
-            console.log(ret);
+            try {
+                let ret = await App.contract.setPrice(price, { from: App.account });
+                console.log(ret);
+            } catch (error) {
+                if (error.code == 4001) {
+                    console.log('user refused transaction');
+                } else {
+                    console.log(error);
+                }
+            }
         }
+        priceInput.val('');
+        return App.render();
+    },
+
+    makeOffer: async function(form, price) {
+        if (price == 0)
+            return;
+        const offerInput = form.find('input[name=price]');
+        let offer = offerInput.val();
+        const re = /\d+/;
+        if (!re.test(offer)) {
+            if (!form.next().is('font')) {
+                form.after('<font color="red">Please input a number</font>');
+            }
+        } else {
+            offer = parseInt(offer);
+            if (form.next().is('font')) {
+                form.next().remove();
+            }
+            if (offer < price) {
+                form.after('<font color="red">Your offer should be equal to or larger than starting price.</font>');
+            } else {
+                try {
+                    let ret = await App.contract.makeDeposit(offer, { from: App.account });
+                    console.log(ret);
+                } catch (error) {
+                    if (error.code == 4001) {
+                        console.log('user refused transaction');
+                    } else {
+                        console.log(error);
+                    }
+                }
+            }
+        }
+        offerInput.val('');
         return App.render();
     },
 
@@ -72,20 +116,57 @@ App = {
         try {
             App.contract = await App.contracts.SecureTransfer.deployed();
             const seller = await App.contract.seller();
+            const buyer = await App.contract.buyer();
             const price = await App.contract.price();
             const offer = await App.contract.offer();
-            const isAccepted = await App.contract.sellerAccept();
+            const isActive = await App.contract.isActive();
             const isSeller = seller === App.account;
+            const isBuyer = buyer === App.account;
+            const hasOffer = offer > 0;
+            const hasPrice = price > 0;
+
+            let sellerTxt = isSeller ? 'You' : seller.toString();
+            let buyerTxt = isBuyer ? 'You' : buyer.toString();
+            let offerTxt = offer.toNumber();
+            if (!hasOffer) {
+                offerTxt = 'No offer';
+                buyerTxt = 'No offer';
+            }
 
             let transTemplate = $('div.transaction div');
-            if (isSeller) {
-                transTemplate.find('#seller').append(' You');
-            } else {
-                $('#seller').text('Seller: ' + seller.toString());
-                $('#price').text('Starting price: ' + price.toNumber());
-                $('#offer').text('Current offer: ' + offer.toString());
-                $('#accepted').text('Accepted: ' + isAccepted.toString());
+            transTemplate.find('#seller span').text(sellerTxt);
+            transTemplate.find('#buyer span').text(buyerTxt);
+            transTemplate.find('#price span').text(price.toNumber());
+            transTemplate.find('#offer span').text(offerTxt);
+
+            const priceForm = transTemplate.find('form[name=settingPrice]');
+            priceForm.find('input[name=submit]').unbind().click(e => App.setPrice(priceForm));
+            const offerForm = transTemplate.find('form[name=makingOffer]');
+            offerForm.find('input[name=submit]').unbind().click(e => App.makeOffer(offerForm, price.toNumber()));
+            const acceptForm = transTemplate.find('form[name=acceptingOffer]');
+
+            if (!isSeller) {
+                priceForm.hide();
             }
+            if (hasOffer) {
+                priceForm.hide();
+            }
+            if (!hasOffer) {
+                transTemplate.find('#buyer').hide();
+            }
+            if (isSeller || !hasPrice) {
+                transTemplate.find('form[name=makingOffer]').hide();
+            }
+            if (!isSeller || !hasOffer) {
+                acceptForm.hide();
+            }
+            if (!isActive) {
+                transTemplate.find('#accepted label').show();
+            }
+            // $('#price').text('Starting price: ' + price.toNumber());
+            // $('#offer').text('Current offer: ' + offer.toString());
+            // $('#accepted').text('Accepted: ' + isActive.toString());
+
 
             // $('div.transaction').children().last().after(template.html());
             //   const goal = web3.fromWei((await App.contract.getGoal()).toNumber() || 0, "ether");
@@ -105,5 +186,5 @@ $(function () {
     });
 });
 
-const priceForm = $('form[name=settingPrice]');
-priceForm.find("input[name=submit]").click(e => App.setPrice(priceForm));
+// const priceForm = $('form[name=settingPrice]');
+// priceForm.find("input[name=submit]").click(e => App.setPrice(priceForm));

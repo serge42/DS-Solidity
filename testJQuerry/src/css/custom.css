@@ -9,6 +9,15 @@ html {
   box-sizing: inherit;
 }
 
+label {
+  font-weight: 800;
+  margin-right: .5rem;
+}
+
+form {
+  margin-bottom: .5rem;
+}
+
 .site {
   padding: 100px 20px;
 }
