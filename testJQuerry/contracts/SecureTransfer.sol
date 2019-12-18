@@ -3,6 +3,7 @@ pragma solidity >=0.4.21 <0.6.0;
 contract SecureTransfer {
 
     uint public price;
+    uint public tip;
     // uint public offer;
     address payable public seller;
     address payable public buyer;
@@ -29,6 +30,7 @@ contract SecureTransfer {
         require(msg.value >= 2 * price, "buyer should deposit twice the price.");
         buyer = msg.sender;
         locked = true;
+        tip = msg.value - 2*price;
         emit Accepted();
     }
 
@@ -45,7 +47,7 @@ contract SecureTransfer {
         require(!active && locked, "cannot refund a canceld transaction");
         emit SellerRefund();
         locked = false;
-        seller.transfer(2 * price);
+        seller.transfer(2 * price + tip);
     }
 
     function cancelOffer() public payable {

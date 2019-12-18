@@ -163,9 +163,10 @@ App = {
         web3.eth.getCoinbase(function (err, account) {
             if (err === null) {
                 App.account = account;
-                $('#acntAddr').html('Your Account: ' + account);
+                $('#acntAddr span').text(account);
                 web3.eth.getBalance(account, function (err, balance) {
-                    $('#acntBalance').html('Blance: ' + web3.fromWei(balance, "ether") + " ETH");
+                    let ethBalance = web3.fromWei(balance, "ether").toFixed(2);
+                    $('#acntBalance span').html(ethBalance);
                 });
             }
         });
